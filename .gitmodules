@@ -1,0 +1,15 @@
+[submodule "lib/65xx_Library"]
+	path = lib/65xx_Library
+	url = https://github.com/mkeller0815/65xx_Library.git
+[submodule "lib/KiCad-Schematic-Symbol-Libraries"]
+	path = lib/KiCad-Schematic-Symbol-Libraries
+	url = https://github.com/xesscorp/KiCad-Schematic-Symbol-Libraries.git
+[submodule "lib/kicad-libs"]
+	path = lib/kicad-libs
+	url = https://github.com/corecode/kicad-libs.git
+[submodule "lib/kicad-symbols"]
+	path = lib/kicad-symbols
+	url = https://github.com/KiCad/kicad-symbols.git
+[submodule "deps/kicad-footprint-generator"]
+	path = deps/kicad-footprint-generator
+	url = git@github.com:pointhi/kicad-footprint-generator.git
