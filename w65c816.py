@@ -71,18 +71,70 @@ lib_search_paths[KICAD] = [
 local = SchLib(name='local')
 
 # LD112 linear regulator
-ldl112 = Part(name='LDL112_SO8', tool=SKIDL, dest=TEMPLATE)
-ldl112.ref_prefix = 'VR'
-ldl112.description = '1.2 A low quiescent current LDO'
-ldl112 += Pin(num=1, name='VOUT', func=Pin.PWROUT)
-ldl112 += Pin(num=2, name='GND', func=Pin.PWRIN)
-ldl112 += Pin(num=3, name='GND', func=Pin.PWRIN)
-ldl112 += Pin(num=4, name='VIN', func=Pin.PWRIN)
-ldl112 += Pin(num=5, name='EN', func=Pin.INPUT)
-ldl112 += Pin(num=6, name='GND', func=Pin.PWRIN)
-ldl112 += Pin(num=7, name='GND', func=Pin.PWRIN)
-ldl112 += Pin(num=8, name='NC', func=Pin.NOCONNECT)
-local += ldl112
+def makeLocalParts(lib):
+    ldl112 = Part(name='LDL112_SO8', tool=SKIDL, dest=TEMPLATE)
+    ldl112.ref_prefix = 'VR'
+    ldl112.description = '1.2 A low quiescent current LDO'
+    ldl112 += Pin(num=1, name='VOUT', func=Pin.PWROUT, drive=POWER)
+    ldl112 += Pin(num=2, name='GND', func=Pin.PWRIN)
+    ldl112 += Pin(num=3, name='GND', func=Pin.PWRIN)
+    ldl112 += Pin(num=4, name='VIN', func=Pin.PWRIN)
+    ldl112 += Pin(num=5, name='EN', func=Pin.INPUT)
+    ldl112 += Pin(num=6, name='GND', func=Pin.PWRIN)
+    ldl112 += Pin(num=7, name='GND', func=Pin.PWRIN)
+    ldl112 += Pin(num=8, name='NC', func=Pin.NOCONNECT)
+    lib += ldl112
+
+    W65C816S = Part(name='W65C816S_PLCC', tool=SKIDL, dest=TEMPLATE)
+    W65C816S.ref_prefix = 'U'
+    W65C816S.description = 'W65C816S 8/16–bit Microprocessor'
+    W65C816S += Pin(num='1', name='VSS', func=Pin.PWRIN)
+    W65C816S += Pin(num='2', name='VPB', func=Pin.OUTPUT)
+    W65C816S += Pin(num='3', name='RDY', func=Pin.BIDIR)
+    W65C816S += Pin(num='4', name='ABORTB', func=Pin.INPUT)
+    W65C816S += Pin(num='5', name='IRQB', func=Pin.INPUT)
+    W65C816S += Pin(num='6', name='MLB', func=Pin.OUTPUT)
+    W65C816S += Pin(num='7', name='NMIB', func=Pin.INPUT)
+    W65C816S += Pin(num='8', name='VPA', func=Pin.OUTPUT)
+    W65C816S += Pin(num='9', name='VDD', func=Pin.PWRIN)
+    W65C816S += Pin(num='10', name='A0', func=Pin.OUTPUT)
+    W65C816S += Pin(num='11', name='A1', func=Pin.OUTPUT)
+    W65C816S += Pin(num='12', name='NC', func=Pin.NOCONNECT)
+    W65C816S += Pin(num='13', name='A2', func=Pin.OUTPUT)
+    W65C816S += Pin(num='14', name='A3', func=Pin.OUTPUT)
+    W65C816S += Pin(num='15', name='A4', func=Pin.OUTPUT)
+    W65C816S += Pin(num='16', name='A5', func=Pin.OUTPUT)
+    W65C816S += Pin(num='17', name='A6', func=Pin.OUTPUT)
+    W65C816S += Pin(num='18', name='A7', func=Pin.OUTPUT)
+    W65C816S += Pin(num='19', name='A8', func=Pin.OUTPUT)
+    W65C816S += Pin(num='20', name='A9', func=Pin.OUTPUT)
+    W65C816S += Pin(num='21', name='A10', func=Pin.OUTPUT)
+    W65C816S += Pin(num='22', name='A11', func=Pin.OUTPUT)
+    W65C816S += Pin(num='23', name='VSS', func=Pin.PWRIN)
+    W65C816S += Pin(num='24', name='VSS', func=Pin.PWRIN)
+    W65C816S += Pin(num='25', name='A12', func=Pin.OUTPUT)
+    W65C816S += Pin(num='26', name='A13', func=Pin.OUTPUT)
+    W65C816S += Pin(num='27', name='A14', func=Pin.OUTPUT)
+    W65C816S += Pin(num='28', name='A15', func=Pin.OUTPUT)
+    W65C816S += Pin(num='29', name='D7', func=Pin.TRISTATE)
+    W65C816S += Pin(num='30', name='D6', func=Pin.TRISTATE)
+    W65C816S += Pin(num='31', name='D5', func=Pin.TRISTATE)
+    W65C816S += Pin(num='32', name='D4', func=Pin.TRISTATE)
+    W65C816S += Pin(num='33', name='D3', func=Pin.TRISTATE)
+    W65C816S += Pin(num='34', name='D2', func=Pin.TRISTATE)
+    W65C816S += Pin(num='35', name='D1', func=Pin.TRISTATE)
+    W65C816S += Pin(num='36', name='D0', func=Pin.TRISTATE)
+    W65C816S += Pin(num='37', name='VDD', func=Pin.PWRIN)
+    W65C816S += Pin(num='38', name='RWB', func=Pin.OUTPUT)
+    W65C816S += Pin(num='39', name='E', func=Pin.OUTPUT)
+    W65C816S += Pin(num='40', name='BE', func=Pin.INPUT)
+    W65C816S += Pin(num='41', name='PHI2', func=Pin.INPUT)
+    W65C816S += Pin(num='42', name='MX', func=Pin.OUTPUT)
+    W65C816S += Pin(num='43', name='VDA', func=Pin.OUTPUT)
+    W65C816S += Pin(num='44', name='RESB', func=Pin.INPUT)
+    lib += W65C816S
+
+makeLocalParts(local)
 
 # global nets
 gnd = Net('GND')
@@ -131,8 +183,8 @@ def makeFPGA():
     fpga = Part('Lattice_iCE_FPGA', 'iCE40-HX4K-TQ144', footprint='TQFP-144_20x20mm_Pitch0.5mm')
 
     # TODO supplies and filters
-    add0805Pullup(fpga['VCCIO_2[2]'], fpga.CRESET_B, '10KOhm')
-    add0805Pullup(fpga['VCCIO_2[2]'], fpga.CDONE, '2.2KOhm')
+    add0805Pullup(fpga['VCCIO_2'], fpga.CRESET_B, '10KOhm')
+    add0805Pullup(fpga['VCCIO_2'], fpga.CDONE, '2.2KOhm')
 
     return fpga
 
@@ -180,9 +232,10 @@ configEeprom(fpga)
 programmingHeader(fpga)
 
 # crap here
-cpu = Part('65xx', 'WD65C816S', footprint='PLCC44')
-acia = Part('65xx', 'W65C51N', footprint='PLCC28')
-cpu.VCC += supply_3v3
+cpu = Part(local, 'W65C816S_PLCC', footprint='PLCC44')
+#acia = Part('65xx', 'W65C51N', footprint='PLCC28')
+cpu['VDD'] += supply_3v3
+cpu['VSS'] += gnd
 
 data = Bus('data', 8)
 
@@ -190,5 +243,5 @@ cpu['D[0:7]'] += data
 fpga['IOT_[168:177]'] += data
 
 
-#ERC()
-#generate_netlist()
+ERC()
+generate_netlist()
