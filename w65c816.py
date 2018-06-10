@@ -134,6 +134,55 @@ def makeLocalParts(lib):
     W65C816S += Pin(num='44', name='RESB', func=Pin.INPUT)
     lib += W65C816S
 
+    IS61WV = Part(name='IS61WV', tool=SKIDL, dest=TEMPLATE)
+    IS61WV.ref_prefix = 'U'
+    IS61WV.description = 'W65C816S 8/16–bit Microprocessor'
+    IS61WV += Pin(num='1', name='NC', func=Pin.NOCONNECT)
+    IS61WV += Pin(num='2', name='NC', func=Pin.NOCONNECT)
+    IS61WV += Pin(num='3', name='A0', func=Pin.INPUT)
+    IS61WV += Pin(num='4', name='A1', func=Pin.INPUT)
+    IS61WV += Pin(num='5', name='A2', func=Pin.INPUT)
+    IS61WV += Pin(num='6', name='A3', func=Pin.INPUT)
+    IS61WV += Pin(num='7', name='A4', func=Pin.INPUT)
+    IS61WV += Pin(num='8', name='CE_B', func=Pin.INPUT)
+    IS61WV += Pin(num='9', name='IO0', func=Pin.TRISTATE)
+    IS61WV += Pin(num='10', name='IO1', func=Pin.TRISTATE)
+    IS61WV += Pin(num='11', name='Vdd', func=Pin.PWRIN)
+    IS61WV += Pin(num='12', name='GND', func=Pin.PWRIN)
+    IS61WV += Pin(num='13', name='IO2', func=Pin.TRISTATE)
+    IS61WV += Pin(num='14', name='IO3', func=Pin.TRISTATE)
+    IS61WV += Pin(num='15', name='WE_B', func=Pin.INPUT)
+    IS61WV += Pin(num='16', name='A5', func=Pin.INPUT)
+    IS61WV += Pin(num='17', name='A6', func=Pin.INPUT)
+    IS61WV += Pin(num='18', name='A7', func=Pin.INPUT)
+    IS61WV += Pin(num='19', name='A8', func=Pin.INPUT)
+    IS61WV += Pin(num='20', name='A9', func=Pin.INPUT)
+    IS61WV += Pin(num='21', name='NC', func=Pin.NOCONNECT)
+    IS61WV += Pin(num='22', name='NC', func=Pin.NOCONNECT)
+    IS61WV += Pin(num='23', name='NC', func=Pin.NOCONNECT)
+    IS61WV += Pin(num='24', name='NC', func=Pin.NOCONNECT)
+    IS61WV += Pin(num='25', name='NC', func=Pin.NOCONNECT)
+    IS61WV += Pin(num='26', name='A10', func=Pin.INPUT)
+    IS61WV += Pin(num='27', name='A11', func=Pin.INPUT)
+    IS61WV += Pin(num='28', name='A12', func=Pin.INPUT)
+    IS61WV += Pin(num='29', name='A13', func=Pin.INPUT)
+    IS61WV += Pin(num='30', name='A14', func=Pin.INPUT)
+    IS61WV += Pin(num='31', name='IO4', func=Pin.TRISTATE)
+    IS61WV += Pin(num='32', name='IO5', func=Pin.TRISTATE)
+    IS61WV += Pin(num='33', name='Vdd', func=Pin.PWRIN)
+    IS61WV += Pin(num='34', name='GND', func=Pin.PWRIN)
+    IS61WV += Pin(num='35', name='IO6', func=Pin.TRISTATE)
+    IS61WV += Pin(num='36', name='IO7', func=Pin.TRISTATE)
+    IS61WV += Pin(num='37', name='OE_B', func=Pin.INPUT)
+    IS61WV += Pin(num='38', name='A15', func=Pin.INPUT)
+    IS61WV += Pin(num='39', name='A16', func=Pin.INPUT)
+    IS61WV += Pin(num='40', name='A17', func=Pin.INPUT)
+    IS61WV += Pin(num='41', name='A18', func=Pin.INPUT)
+    IS61WV += Pin(num='42', name='NC', func=Pin.NOCONNECT)
+    IS61WV += Pin(num='43', name='NC', func=Pin.NOCONNECT)
+    IS61WV += Pin(num='44', name='NC', func=Pin.NOCONNECT)
+    lib += IS61WV
+
 makeLocalParts(local)
 
 # global nets
@@ -225,6 +274,9 @@ def programmingHeader(fpga):
     hdr[8] += fpga.IOB_108_SS
 
 fpga = makeFPGA()
+
+
+sram = Part(local, 'IS61WV', value='IS61WV5128EDBLL-10TLI', footprint='TSOP-II-44_10.16x18.42_Pitch0.8mm')
 
 # Configuration / Programming
 fpga.VCC_SPI += supply_3v3
