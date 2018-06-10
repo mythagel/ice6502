@@ -295,5 +295,5 @@ cpu['D[0:7]'] += data
 fpga['IOT_[168:177]'] += data
 
 
-ERC()
-generate_netlist()
+#ERC()
+#generate_netlist()

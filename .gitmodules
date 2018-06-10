@@ -1,6 +1,3 @@
-[submodule "lib/65xx_Library"]
-	path = lib/65xx_Library
-	url = https://github.com/mkeller0815/65xx_Library.git
 [submodule "lib/KiCad-Schematic-Symbol-Libraries"]
 	path = lib/KiCad-Schematic-Symbol-Libraries
 	url = https://github.com/xesscorp/KiCad-Schematic-Symbol-Libraries.git
