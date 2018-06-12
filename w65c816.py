@@ -183,6 +183,88 @@ def makeLocalParts(lib):
     IS61WV += Pin(num='44', name='NC', func=Pin.NOCONNECT)
     lib += IS61WV
 
+    W65C22S = Part(name='W65C22S_PLCC', tool=SKIDL, dest=TEMPLATE)
+    W65C22S.ref_prefix = 'U'
+    W65C22S.description = 'Versatile Interface Adapter (VIA)'
+    W65C22S += Pin(num='1', name='VSS', func=Pin.PWRIN)
+    W65C22S += Pin(num='2', name='PA0', func=Pin.BIDIR)
+    W65C22S += Pin(num='3', name='PA1', func=Pin.BIDIR)
+    W65C22S += Pin(num='4', name='PA2', func=Pin.BIDIR)
+    W65C22S += Pin(num='5', name='PA3', func=Pin.BIDIR)
+    W65C22S += Pin(num='6', name='PA4', func=Pin.BIDIR)
+    W65C22S += Pin(num='7', name='PA5', func=Pin.BIDIR)
+    W65C22S += Pin(num='8', name='PA6', func=Pin.BIDIR)
+    W65C22S += Pin(num='9', name='PA7', func=Pin.BIDIR)
+    W65C22S += Pin(num='10', name='PB0', func=Pin.BIDIR)
+    W65C22S += Pin(num='11', name='NC', func=Pin.NOCONNECT)
+    W65C22S += Pin(num='12', name='PB1', func=Pin.BIDIR)
+    W65C22S += Pin(num='13', name='PB2', func=Pin.BIDIR)
+    W65C22S += Pin(num='14', name='PB3', func=Pin.BIDIR)
+    W65C22S += Pin(num='15', name='PB4', func=Pin.BIDIR)
+    W65C22S += Pin(num='16', name='PB5', func=Pin.BIDIR)
+    W65C22S += Pin(num='17', name='PB6', func=Pin.BIDIR)
+    W65C22S += Pin(num='18', name='PB7', func=Pin.BIDIR)
+    W65C22S += Pin(num='19', name='CB1', func=Pin.BIDIR)
+    W65C22S += Pin(num='20', name='CB2', func=Pin.BIDIR)
+    W65C22S += Pin(num='21', name='VDD', func=Pin.PWRIN)
+    W65C22S += Pin(num='22', name='NC', func=Pin.NOCONNECT)
+    W65C22S += Pin(num='23', name='IRQB', func=Pin.OUTPUT)
+    W65C22S += Pin(num='24', name='RWB', func=Pin.INPUT)
+    W65C22S += Pin(num='25', name='CS2B', func=Pin.INPUT)
+    W65C22S += Pin(num='26', name='CS1', func=Pin.INPUT)
+    W65C22S += Pin(num='27', name='PHI2', func=Pin.INPUT)
+    W65C22S += Pin(num='28', name='D7', func=Pin.BIDIR)
+    W65C22S += Pin(num='29', name='D6', func=Pin.BIDIR)
+    W65C22S += Pin(num='30', name='D5', func=Pin.BIDIR)
+    W65C22S += Pin(num='31', name='D4', func=Pin.BIDIR)
+    W65C22S += Pin(num='32', name='D3', func=Pin.BIDIR)
+    W65C22S += Pin(num='33', name='NC', func=Pin.NOCONNECT)
+    W65C22S += Pin(num='34', name='D2', func=Pin.BIDIR)
+    W65C22S += Pin(num='35', name='D1', func=Pin.BIDIR)
+    W65C22S += Pin(num='36', name='D0', func=Pin.BIDIR)
+    W65C22S += Pin(num='37', name='RESB', func=Pin.INPUT)
+    W65C22S += Pin(num='38', name='NC', func=Pin.NOCONNECT)
+    W65C22S += Pin(num='39', name='RS3', func=Pin.INPUT)
+    W65C22S += Pin(num='40', name='RS2', func=Pin.INPUT)
+    W65C22S += Pin(num='41', name='RS1', func=Pin.INPUT)
+    W65C22S += Pin(num='42', name='RS0', func=Pin.INPUT)
+    W65C22S += Pin(num='43', name='CA2', func=Pin.BIDIR)
+    W65C22S += Pin(num='44', name='CA1', func=Pin.BIDIR)
+    lib += W65C22S
+
+    W65C51N = Part(name='W65C51N_PLCC', tool=SKIDL, dest=TEMPLATE)
+    W65C51N.ref_prefix = 'U'
+    W65C51N.description = 'Asynchrones Communications Interface Adapter'
+    W65C51N += Pin(num='1', name='VSS', func=Pin.PWRIN)
+    W65C51N += Pin(num='2', name='CS0', func=Pin.INPUT)
+    W65C51N += Pin(num='3', name='CS1B', func=Pin.INPUT)
+    W65C51N += Pin(num='4', name='RESB', func=Pin.INPUT)
+    W65C51N += Pin(num='5', name='RxC', func=Pin.BIDIR)
+    W65C51N += Pin(num='6', name='XTL1', func=Pin.INPUT)
+    W65C51N += Pin(num='7', name='XTL0', func=Pin.INPUT)
+    W65C51N += Pin(num='8', name='RTSB', func=Pin.OUTPUT)
+    W65C51N += Pin(num='9', name='CTSB', func=Pin.INPUT)
+    W65C51N += Pin(num='10', name='TxD', func=Pin.OUTPUT)
+    W65C51N += Pin(num='11', name='DTRB', func=Pin.OUTPUT)
+    W65C51N += Pin(num='12', name='RxD', func=Pin.INPUT)
+    W65C51N += Pin(num='13', name='RS0', func=Pin.INPUT)
+    W65C51N += Pin(num='14', name='RS1', func=Pin.INPUT)
+    W65C51N += Pin(num='15', name='VDD', func=Pin.BIDIR)
+    W65C51N += Pin(num='16', name='DCDB', func=Pin.INPUT)
+    W65C51N += Pin(num='17', name='DSRB', func=Pin.INPUT)
+    W65C51N += Pin(num='18', name='D0', func=Pin.BIDIR)
+    W65C51N += Pin(num='19', name='D1', func=Pin.BIDIR)
+    W65C51N += Pin(num='20', name='D2', func=Pin.BIDIR)
+    W65C51N += Pin(num='21', name='D3', func=Pin.BIDIR)
+    W65C51N += Pin(num='22', name='D4', func=Pin.BIDIR)
+    W65C51N += Pin(num='23', name='D5', func=Pin.BIDIR)
+    W65C51N += Pin(num='24', name='D6', func=Pin.BIDIR)
+    W65C51N += Pin(num='25', name='D7', func=Pin.BIDIR)
+    W65C51N += Pin(num='26', name='IRQB', func=Pin.OUTPUT)
+    W65C51N += Pin(num='27', name='PHI2', func=Pin.INPUT)
+    W65C51N += Pin(num='28', name='RWB', func=Pin.INPUT)
+    lib += W65C51N
+
 makeLocalParts(local)
 
 # global nets
@@ -190,6 +272,26 @@ gnd = Net('GND')
 vin = Net('VIN')
 supply_3v3 = Net('3v3')
 supply_1v2 = Net('1v2')
+
+VIN_Conn = Part('Connector_Generic', 'Conn_01x01', drive=POWER, value='VIN', footprint='Pin_d1.0mm_L10.0mm')
+VIN_Conn[1] += vin
+GND_Conn = Part('Connector_Generic', 'Conn_01x01', drive=POWER, value='GND', footprint='Pin_d1.0mm_L10.0mm')
+GND_Conn[1] += gnd
+
+@subcircuit
+def testPoints():
+    global supply_3v3
+    global supply_1v2
+    global gnd
+    tp3v3 = Part('Connector_Generic', 'Conn_01x01', ref_prefix='TP', value='3v3', footprint='Test_Point_Pad_d1.5mm')
+    tp3v3[1] += supply_3v3
+    tp1v2 = Part('Connector_Generic', 'Conn_01x01', ref_prefix='TP', value='1v2', footprint='Test_Point_Pad_d1.5mm')
+    tp1v2[1] += supply_1v2
+    tpgnd = Part('Connector_Generic', 'Conn_01x01', ref_prefix='TP', value='GND', footprint='Test_Point_Pad_d1.5mm')
+    tpgnd[1] += gnd
+    # other logic test points
+
+testPoints()
 
 # 3v3 supply switching regulator + filters
 @subcircuit
@@ -212,7 +314,7 @@ def reg1v2(vin, vout):
     inC = Part('Device', 'C', value='1uF', footprint='C_0805_HandSoldering')
     outC = Part('Device', 'C', value='1uF', footprint='C_0805_HandSoldering')
     vreg.VIN += vin, inC[1]
-    vreg.GND += gnd
+    vreg['GND'] += gnd
     gnd += inC[2], outC[2]
     vreg.VOUT += vout, outC[1]
     vreg.EN += vin    # tie enable high
@@ -229,11 +331,14 @@ def add0805Pullup(vcc, pin, value):
 #fpga
 @subcircuit
 def makeFPGA():
+    global gnd
     fpga = Part('Lattice_iCE_FPGA', 'iCE40-HX4K-TQ144', footprint='TQFP-144_20x20mm_Pitch0.5mm')
 
     # TODO supplies and filters
     add0805Pullup(fpga['VCCIO_2'], fpga.CRESET_B, '10KOhm')
     add0805Pullup(fpga['VCCIO_2'], fpga.CDONE, '2.2KOhm')
+
+    fpga['GND'] += gnd
 
     return fpga
 
@@ -275,8 +380,16 @@ def programmingHeader(fpga):
 
 fpga = makeFPGA()
 
+dataBus = Bus('data', 8)
+addressBus = Bus('addr', 16)
 
 sram = Part(local, 'IS61WV', value='IS61WV5128EDBLL-10TLI', footprint='TSOP-II-44_10.16x18.42_Pitch0.8mm')
+sram['Vdd'] += supply_3v3
+sram['GND'] += gnd
+
+sram['IO[0:7]'] += dataBus
+sram['A[0:15]'] += addressBus
+sram['A[16:18]'] += fpga['IOR_161', 'IOR_164', 'IOR_165']
 
 # Configuration / Programming
 fpga.VCC_SPI += supply_3v3
@@ -285,15 +398,29 @@ programmingHeader(fpga)
 
 # crap here
 cpu = Part(local, 'W65C816S_PLCC', footprint='PLCC44')
-#acia = Part('65xx', 'W65C51N', footprint='PLCC28')
 cpu['VDD'] += supply_3v3
 cpu['VSS'] += gnd
+cpu['D[0:7]'] += dataBus
 
-data = Bus('data', 8)
+# NOTE: CPU address lines go to different bank
+cpu['A[15:0]'] += fpga['IOT_168', 'IOT_169', 'IOT_170', 'IOT_171', 'IOT_172', 'IOT_173', 'IOT_174', 'IOT_177', 'IOT_178', 'IOT_179', 'IOT_181', 'IOT_190', 'IOT_191', 'IOT_192', 'IOT_197_GBIN1', 'IOT_198_GBIN0']
 
-cpu['D[0:7]'] += data
-fpga['IOT_[168:177]'] += data
+fpga['IOR_109', 'IOR_110', 'IOR_111', 'IOR_112', 'IOR_114', 'IOR_115', 'IOR_116', 'IOR_117'] += dataBus
+fpga['IOR_118', 'IOR_119', 'IOR_120', 'IOR_128', 'IOR_136', 'IOR_137', 'IOR_138', 'IOR_139', 'IOR_140_GBIN3',
+        'IOR_141_GBIN2', 'IOR_144', 'IOR_146', 'IOR_147', 'IOR_148', 'IOR_152', 'IOR_160'] += addressBus[15:0]
 
+via = Part(local, 'W65C22S_PLCC', footprint='PLCC44')
+via['VDD'] += supply_3v3
+via['VSS'] += gnd
+via['D[0:7]'] += dataBus
+via['RS[0:3]'] += addressBus[0:3]
 
-#ERC()
-#generate_netlist()
+acia = Part(local, 'W65C51N_PLCC', footprint='PLCC28')
+acia['VDD'] += supply_3v3
+acia['VSS'] += gnd
+acia['D[0:7]'] += dataBus
+acia['RS[0:1]'] += addressBus[0:1]
+
+if sys.argv[1] == 'generate':
+    ERC()
+    generate_netlist()

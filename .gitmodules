@@ -7,6 +7,3 @@
 [submodule "lib/kicad-symbols"]
 	path = lib/kicad-symbols
 	url = https://github.com/KiCad/kicad-symbols.git
-[submodule "deps/kicad-footprint-generator"]
-	path = deps/kicad-footprint-generator
-	url = git@github.com:pointhi/kicad-footprint-generator.git
