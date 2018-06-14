@@ -74,10 +74,7 @@ gnd.drive = POWER
 vin.drive = POWER
 
 supply_3v3 = Net('3v3')
-#supply_3v3.drive = POWER
-
 supply_1v2 = Net('1v2')
-#supply_1v2.drive = POWER
 
 VIN_Conn = Part('Connector_Generic', 'Conn_01x01', value='VIN', footprint='Pin_d1.0mm_L10.0mm')
 VIN_Conn[1] += vin
@@ -85,19 +82,9 @@ GND_Conn = Part('Connector_Generic', 'Conn_01x01', value='GND', footprint='Pin_d
 GND_Conn[1] += gnd
 
 @subcircuit
-def testPoints():
-    global supply_3v3
-    global supply_1v2
-    global gnd
-    tp3v3 = Part('Connector_Generic', 'Conn_01x01', ref_prefix='TP', value='3v3', footprint='Test_Point_Pad_d1.5mm')
-    tp3v3[1] += supply_3v3
-    tp1v2 = Part('Connector_Generic', 'Conn_01x01', ref_prefix='TP', value='1v2', footprint='Test_Point_Pad_d1.5mm')
-    tp1v2[1] += supply_1v2
-    tpgnd = Part('Connector_Generic', 'Conn_01x01', ref_prefix='TP', value='GND', footprint='Test_Point_Pad_d1.5mm')
-    tpgnd[1] += gnd
-    # other logic test points
-
-testPoints()
+def testPoint(net, name):
+    tp = Part('Connector_Generic', 'Conn_01x01', ref_prefix='TP', value=name, footprint='Test_Point_Pad_d1.5mm')
+    tp[1] += net
 
 # 3v3 supply switching regulator + filters
 @subcircuit
@@ -127,7 +114,11 @@ def reg1v2(vin, vout):
 
 reg3v3(vin, supply_3v3)
 reg1v2(supply_3v3, supply_1v2)
+testPoint(supply_3v3, '3v3')
+testPoint(supply_1v2, '1v2')
+testPoint(gnd, 'GND')
 
+# TODO similar func for decouping caps
 @subcircuit
 def add0805Pullup(vcc, pin, value):
     pullup = Part('Device', 'R', value=value, footprint='C_0805_HandSoldering')
@@ -141,11 +132,11 @@ def pllFilter(vccpll, gndpll):
     lf = Part('Device', 'C', value='10uF', footprint='C_0805_HandSoldering')
     hf = Part('Device', 'C', value='100nF', footprint='C_0805_HandSoldering')
 
-    a = Net()
+    a = Net('PLLVCC')
     a += vccpll
     a.drive = POWER
 
-    b = Net()
+    b = Net('PLLGND')
     b += gndpll
     b.drive = POWER
 
@@ -221,51 +212,101 @@ def programmingHeader(fpga):
     hdr[7] += fpga.IOB_107_SCK
     hdr[8] += fpga.IOB_108_SS
 
-fpga = makeFPGA()
 
 dataBus = Bus('data', 8)
-addressBus = Bus('addr', 16)
+rwb = Bus('r/wb', 1)     # high = read, low = write
+phi2 = Bus('phi2', 1)
+# Downstream address bus
+addressBus = Bus('addr', 24)    # decoded by fpga
+
+fpga = makeFPGA()
+
+# fpga configuration / programming
+fpga.VCC_SPI += supply_3v3
+configEeprom(fpga)
+programmingHeader(fpga)
+
+fpga['IOT_206', 'IOT_212', 'IOT_213', 'IOT_214', 'IOT_215', 'IOT_216', 'IOT_217', 'IOT_219'] += dataBus
+# NOTE: downstream address lines (24bit); bank address from dataBus while PHI2 is low
+fpga['IOR_109', 'IOR_110', 'IOR_111', 'IOR_112', 'IOR_114', 'IOR_118', 'IOR_119', 'IOR_120', 'IOR_128', 'IOR_136', 'IOR_137', 'IOR_138', 'IOR_139', 'IOR_140_GBIN3', 'IOR_141_GBIN2', 'IOR_144', 'IOR_146', 'IOR_147', 'IOR_148', 'IOR_152', 'IOR_160', 'IOR_161', 'IOR_164', 'IOR_165'] += addressBus
+#fpga phi2
+#fpga rwb
+
+#TODO function to connect bus device
+# common bus pins: addr[0:23], data[0:8], RWB, PHI2
+
+
+cpu = Part(local, 'W65C816S_PLCC', footprint='PLCC44')
+cpu['VDD'] += supply_3v3
+cpu['VSS'] += gnd
+
+cpu.E += NC
+cpu.MX += NC
+
+cpu['D[0:7]'] += dataBus
+# NOTE: upstream address lines (16bit)
+cpu['A[0:15]'] += fpga['IOT_168', 'IOT_169', 'IOT_170', 'IOT_171', 'IOT_172', 'IOT_173', 'IOT_174', 'IOT_177', 'IOT_178', 'IOT_179', 'IOT_181', 'IOT_190', 'IOT_191', 'IOT_192', 'IOT_197_GBIN1', 'IOT_198_GBIN0']
+#cpu.RWB += fpga
+#cpu.PHI2 += fpga
+
+add0805Pullup(supply_3v3, cpu.RDY, '3.3KOhm')
+testPoint(cpu.RDY, 'RDY')
+
+add0805Pullup(supply_3v3, cpu.RESB, '2.2KOhm')
+testPoint(cpu.RESB, 'RESB')
+
+# Vector pull - know if a vector address is being read
+#cpu.VPB += fpga
+
+# VPA/VDA - either high = bus address is value
+#cpu.VPA += fpga
+#cpu.VDA += fpga
+
+#cpu.ABORTB += fpga
+#cpu.BE += fpga
+
+# IRQ design - all individually routed to fpga?
+#cpu.IRQB += fpga
+
+#cpu.NMIB += fpga
 
 sram = Part(local, 'IS61WV', value='IS61WV5128EDBLL-10TLI', footprint='TSOP-II-44_10.16x18.42_Pitch0.8mm')
 sram['Vdd'] += supply_3v3
 sram['GND'] += gnd
 
 sram['IO[0:7]'] += dataBus
-sram['A[0:15]'] += addressBus
-sram['A[16:18]'] += fpga['IOR_161', 'IOR_164', 'IOR_165']
+sram['A[0:18]'] += addressBus[0:18]
 sram.CE_B += fpga.IOB_56
 sram.WE_B += fpga.IOB_57
 sram.OE_B += fpga.IOB_61
 
-# Configuration / Programming
-fpga.VCC_SPI += supply_3v3
-configEeprom(fpga)
-programmingHeader(fpga)
+@subcircuit
+def VIA():
+    global local
+    global supply_3v3
+    global gnd
+    global dataBus
+    global addressBus
+    via = Part(local, 'W65C22S_PLCC', footprint='PLCC44')
+    via['VDD'] += supply_3v3
+    via['VSS'] += gnd
+    via['D[0:7]'] += dataBus
+    via['RS[0:3]'] += addressBus[0:3]
+    # IRQ, PHI2, RWB
 
-# crap here
-cpu = Part(local, 'W65C816S_PLCC', footprint='PLCC44')
-cpu['VDD'] += supply_3v3
-cpu['VSS'] += gnd
-cpu['D[0:7]'] += dataBus
-
-# NOTE: CPU address lines go to different bank
-cpu['A[15:0]'] += fpga['IOT_168', 'IOT_169', 'IOT_170', 'IOT_171', 'IOT_172', 'IOT_173', 'IOT_174', 'IOT_177', 'IOT_178', 'IOT_179', 'IOT_181', 'IOT_190', 'IOT_191', 'IOT_192', 'IOT_197_GBIN1', 'IOT_198_GBIN0']
-
-fpga['IOR_109', 'IOR_110', 'IOR_111', 'IOR_112', 'IOR_114', 'IOR_115', 'IOR_116', 'IOR_117'] += dataBus
-fpga['IOR_118', 'IOR_119', 'IOR_120', 'IOR_128', 'IOR_136', 'IOR_137', 'IOR_138', 'IOR_139', 'IOR_140_GBIN3',
-        'IOR_141_GBIN2', 'IOR_144', 'IOR_146', 'IOR_147', 'IOR_148', 'IOR_152', 'IOR_160'] += addressBus[15:0]
-
-via = Part(local, 'W65C22S_PLCC', footprint='PLCC44')
-via['VDD'] += supply_3v3
-via['VSS'] += gnd
-via['D[0:7]'] += dataBus
-via['RS[0:3]'] += addressBus[0:3]
-
-acia = Part(local, 'W65C51N_PLCC', footprint='PLCC28')
-acia['VDD'] += supply_3v3
-acia['VSS'] += gnd
-acia['D[0:7]'] += dataBus
-acia['RS[0:1]'] += addressBus[0:1]
+@subcircuit
+def ACIA():
+    global local
+    global supply_3v3
+    global gnd
+    global dataBus
+    global addressBus
+    acia = Part(local, 'W65C51N_PLCC', footprint='PLCC28')
+    acia['VDD'] += supply_3v3
+    acia['VSS'] += gnd
+    acia['D[0:7]'] += dataBus
+    acia['RS[0:1]'] += addressBus[0:1]
+    # IRQ, PHI2, RWB
 
 if sys.argv[1] == 'generate':
     ERC()
