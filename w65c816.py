@@ -218,6 +218,8 @@ rwb = Bus('r/wb', 1)     # high = read, low = write
 phi2 = Bus('phi2', 1)
 # Downstream address bus
 addressBus = Bus('addr', 24)    # decoded by fpga
+# Upstream address bus
+cpuAddrBus = Bus('cpu_addr', 16)    # decoded by fpga
 
 fpga = makeFPGA()
 
@@ -245,7 +247,8 @@ cpu.MX += NC
 
 cpu['D[0:7]'] += dataBus
 # NOTE: upstream address lines (16bit)
-cpu['A[0:15]'] += fpga['IOT_168', 'IOT_169', 'IOT_170', 'IOT_171', 'IOT_172', 'IOT_173', 'IOT_174', 'IOT_177', 'IOT_178', 'IOT_179', 'IOT_181', 'IOT_190', 'IOT_191', 'IOT_192', 'IOT_197_GBIN1', 'IOT_198_GBIN0']
+cpu['A[0:15]'] += cpuAddrBus
+cpuAddrBus += fpga['IOT_168', 'IOT_169', 'IOT_170', 'IOT_171', 'IOT_172', 'IOT_173', 'IOT_174', 'IOT_177', 'IOT_178', 'IOT_179', 'IOT_181', 'IOT_190', 'IOT_191', 'IOT_192', 'IOT_197_GBIN1', 'IOT_198_GBIN0']
 #cpu.RWB += fpga
 #cpu.PHI2 += fpga
 
