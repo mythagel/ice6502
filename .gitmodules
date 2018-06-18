@@ -1,9 +1,9 @@
-[submodule "lib/KiCad-Schematic-Symbol-Libraries"]
-	path = lib/KiCad-Schematic-Symbol-Libraries
+[submodule "pcb/lib/KiCad-Schematic-Symbol-Libraries"]
+	path = pcb/lib/KiCad-Schematic-Symbol-Libraries
 	url = https://github.com/xesscorp/KiCad-Schematic-Symbol-Libraries.git
-[submodule "lib/kicad-libs"]
-	path = lib/kicad-libs
+[submodule "pcb/lib/kicad-libs"]
+	path = pcb/lib/kicad-libs
 	url = https://github.com/corecode/kicad-libs.git
-[submodule "lib/kicad-symbols"]
-	path = lib/kicad-symbols
+[submodule "pcb/lib/kicad-symbols"]
+	path = pcb/lib/kicad-symbols
 	url = https://github.com/KiCad/kicad-symbols.git

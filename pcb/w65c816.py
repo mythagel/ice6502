@@ -59,6 +59,9 @@ from parts import *
 # Y            Crystal or Oscillator
 # Z            Ref Des Suppressed
 
+
+# could probably solder 0603
+
 # Setup
 set_default_tool(KICAD)
 lib_search_paths[KICAD] = [
@@ -69,17 +72,9 @@ lib_search_paths[KICAD] = [
 
 # global nets
 gnd = Net('GND')
-vin = Net('VIN')
 gnd.drive = POWER
-vin.drive = POWER
-
 supply_3v3 = Net('3v3')
 supply_1v2 = Net('1v2')
-
-VIN_Conn = Part('Connector_Generic', 'Conn_01x01', value='VIN', footprint='Pin_d1.0mm_L10.0mm')
-VIN_Conn[1] += vin
-GND_Conn = Part('Connector_Generic', 'Conn_01x01', value='GND', footprint='Pin_d1.0mm_L10.0mm')
-GND_Conn[1] += gnd
 
 @subcircuit
 def testPoint(net, name):
@@ -112,11 +107,24 @@ def reg1v2(vin, vout):
     vreg.VOUT += vout, outC[1]
     vreg.EN += vin    # tie enable high
 
-reg3v3(vin, supply_3v3)
-reg1v2(supply_3v3, supply_1v2)
-testPoint(supply_3v3, '3v3')
-testPoint(supply_1v2, '1v2')
-testPoint(gnd, 'GND')
+@subcircuit
+def powerSupply():
+    global gnd
+    global supply_3v3
+    global supply_1v2
+
+    vin = Net('VIN')
+    vin.drive = POWER
+    VIN_Conn = Part('Connector_Generic', 'Conn_01x01', value='VIN', footprint='Pin_d1.0mm_L10.0mm')
+    VIN_Conn[1] += vin
+    GND_Conn = Part('Connector_Generic', 'Conn_01x01', value='GND', footprint='Pin_d1.0mm_L10.0mm')
+    GND_Conn[1] += gnd
+
+    reg3v3(vin, supply_3v3)
+    reg1v2(supply_3v3, supply_1v2)
+    testPoint(supply_3v3, '3v3')
+    testPoint(supply_1v2, '1v2')
+    testPoint(gnd, 'GND')
 
 # TODO similar func for decouping caps
 @subcircuit
@@ -124,6 +132,12 @@ def add0805Pullup(vcc, pin, value):
     pullup = Part('Device', 'R', value=value, footprint='C_0805_HandSoldering')
     vcc += pullup[1]
     pin += pullup[2]
+
+@subcircuit
+def add0805Filter(vcc, gnd, value):
+    f = Part('Device', 'C', value=value, footprint='C_0805_HandSoldering')
+    vcc += f[1]
+    gnd += f[2]
 
 @subcircuit
 def pllFilter(vccpll, gndpll):
@@ -148,13 +162,13 @@ def pllFilter(vccpll, gndpll):
     lf[2] += gndpll
     hf[2] += gndpll
 
-#fpga
 @subcircuit
 def makeFPGA():
     global gnd
     global supply_3v3
     global supply_1v2
     fpga = Part('Lattice_iCE_FPGA', 'iCE40-HX4K-TQ144', footprint='TQFP-144_20x20mm_Pitch0.5mm')
+    fpga.ref = "U0"
 
     # TODO supplies and filters
     add0805Pullup(fpga['VCCIO_2'], fpga.CRESET_B, '10KOhm')
@@ -196,9 +210,8 @@ def configEeprom(fpga):
 
     eeprom.VCC += fpga.VCC_SPI
     eeprom.GND += gnd
-    C = Part('Device', 'C', value='100nF', footprint='C_0603_HandSoldering')
-    C[1] += eeprom.VCC
-    C[2] += eeprom.GND
+
+    add0805Filter(eeprom.VCC, eeprom.GND, '100nF')
 
 @subcircuit
 def programmingHeader(fpga):
@@ -216,21 +229,24 @@ def programmingHeader(fpga):
 dataBus = Bus('data', 8)
 rwb = Bus('r/wb', 1)     # high = read, low = write
 phi2 = Bus('phi2', 1)
-# Downstream address bus
-addressBus = Bus('addr', 24)    # decoded by fpga
-# Upstream address bus
-cpuAddrBus = Bus('cpu_addr', 16)    # decoded by fpga
+addressBus = Bus('addr_b', 24)    # decoded by fpga
+
+
 
 fpga = makeFPGA()
 
 # fpga configuration / programming
 fpga.VCC_SPI += supply_3v3
-configEeprom(fpga)
-programmingHeader(fpga)
+#configEeprom(fpga)
+#programmingHeader(fpga)
 
-fpga['IOT_206', 'IOT_212', 'IOT_213', 'IOT_214', 'IOT_215', 'IOT_216', 'IOT_217', 'IOT_219'] += dataBus
+IOL = sorted(fpga['IOL_'], reverse=True, key=lambda pin: int(pin.num))
+cpuAddrBus = Bus('addr_c', 16)    # decoded by fpga
+cpuAddrBus += IOL[0:16]
+dataBus[7:0] += IOL[17:25]
+
+#fpga['IOT_206', 'IOT_212', 'IOT_213', 'IOT_214', 'IOT_215', 'IOT_216', 'IOT_217', 'IOT_219'] += dataBus
 # NOTE: downstream address lines (24bit); bank address from dataBus while PHI2 is low
-fpga['IOR_109', 'IOR_110', 'IOR_111', 'IOR_112', 'IOR_114', 'IOR_118', 'IOR_119', 'IOR_120', 'IOR_128', 'IOR_136', 'IOR_137', 'IOR_138', 'IOR_139', 'IOR_140_GBIN3', 'IOR_141_GBIN2', 'IOR_144', 'IOR_146', 'IOR_147', 'IOR_148', 'IOR_152', 'IOR_160', 'IOR_161', 'IOR_164', 'IOR_165'] += addressBus
 #fpga phi2
 #fpga rwb
 
@@ -239,6 +255,7 @@ fpga['IOR_109', 'IOR_110', 'IOR_111', 'IOR_112', 'IOR_114', 'IOR_118', 'IOR_119'
 
 
 cpu = Part(local, 'W65C816S_PLCC', footprint='PLCC44')
+cpu.ref = "U1"
 cpu['VDD'] += supply_3v3
 cpu['VSS'] += gnd
 
@@ -248,7 +265,6 @@ cpu.MX += NC
 cpu['D[0:7]'] += dataBus
 # NOTE: upstream address lines (16bit)
 cpu['A[0:15]'] += cpuAddrBus
-cpuAddrBus += fpga['IOT_168', 'IOT_169', 'IOT_170', 'IOT_171', 'IOT_172', 'IOT_173', 'IOT_174', 'IOT_177', 'IOT_178', 'IOT_179', 'IOT_181', 'IOT_190', 'IOT_191', 'IOT_192', 'IOT_197_GBIN1', 'IOT_198_GBIN0']
 #cpu.RWB += fpga
 #cpu.PHI2 += fpga
 
@@ -273,15 +289,22 @@ testPoint(cpu.RESB, 'RESB')
 
 #cpu.NMIB += fpga
 
-sram = Part(local, 'IS61WV', value='IS61WV5128EDBLL-10TLI', footprint='TSOP-II-44_10.16x18.42_Pitch0.8mm')
-sram['Vdd'] += supply_3v3
-sram['GND'] += gnd
+@subcircuit
+def RAM():
+    global local
+    global supply_3v3
+    global gnd
+    global dataBus
+    global addressBus
+    sram = Part(local, 'IS61WV', value='IS61WV5128EDBLL-10TLI', footprint='TSOP-II-44_10.16x18.42_Pitch0.8mm')
+    sram['Vdd'] += supply_3v3
+    sram['GND'] += gnd
 
-sram['IO[0:7]'] += dataBus
-sram['A[0:18]'] += addressBus[0:18]
-sram.CE_B += fpga.IOB_56
-sram.WE_B += fpga.IOB_57
-sram.OE_B += fpga.IOB_61
+    sram['IO[0:7]'] += dataBus
+    sram['A[0:18]'] += addressBus[0:18]
+    sram.CE_B += fpga.IOB_56
+    sram.WE_B += fpga.IOB_57
+    sram.OE_B += fpga.IOB_61
 
 @subcircuit
 def VIA():
@@ -291,6 +314,7 @@ def VIA():
     global dataBus
     global addressBus
     via = Part(local, 'W65C22S_PLCC', footprint='PLCC44')
+    via.ref = "U2"
     via['VDD'] += supply_3v3
     via['VSS'] += gnd
     via['D[0:7]'] += dataBus
@@ -305,11 +329,17 @@ def ACIA():
     global dataBus
     global addressBus
     acia = Part(local, 'W65C51N_PLCC', footprint='PLCC28')
+    via.ref = "U3"
     acia['VDD'] += supply_3v3
     acia['VSS'] += gnd
     acia['D[0:7]'] += dataBus
     acia['RS[0:1]'] += addressBus[0:1]
     # IRQ, PHI2, RWB
+
+powerSupply()
+RAM()
+#VIA()
+#ACIA()
 
 if sys.argv[1] == 'generate':
     ERC()
