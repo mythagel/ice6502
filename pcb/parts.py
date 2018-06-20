@@ -4,6 +4,13 @@ from skidl import *
 # local parts
 local = SchLib(name='local')
 
+led = Part(name='LED', tool=SKIDL, dest=TEMPLATE)
+led.ref_prefix = 'LED'
+led.description = 'Generic LED'
+led += Pin(num=1, name='1', func=Pin.PASSIVE)
+led += Pin(num=2, name='2', func=Pin.PASSIVE)
+local += led
+
 # LD112 linear regulator
 ldl112 = Part(name='LDL112_SO8', tool=SKIDL, dest=TEMPLATE)
 ldl112.ref_prefix = 'VR'
