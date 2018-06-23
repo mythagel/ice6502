@@ -74,6 +74,7 @@ lib_search_paths[KICAD] = [
 # easier when laying out the pcb as related components are easily grouped.
 # Then turn them back on and route power and ground
 distributePower = False
+passives = False
 
 # global nets
 if distributePower:
@@ -158,6 +159,8 @@ def powerSupply():
 # TODO similar func for decouping caps
 @subcircuit
 def add0805Pullup(vcc, pin, value):
+    if passives == False:
+        return
     pullup = Part('Device', 'R', value=value, footprint='R_0805_HandSoldering')
     if vcc:
         vcc += pullup[1]
@@ -165,6 +168,8 @@ def add0805Pullup(vcc, pin, value):
 
 @subcircuit
 def add0805Filter(vcc, gnd, value):
+    if passives == False:
+        return
     f = Part('Device', 'C', value=value, footprint='C_0805_HandSoldering')
     if vcc:
         vcc += f[1]
@@ -172,6 +177,8 @@ def add0805Filter(vcc, gnd, value):
 
 @subcircuit
 def pllFilter(vccpll, gndpll):
+    if passives == False:
+        return
     r = Part('Device', 'R', value='100Ohm', footprint='R_0805_HandSoldering')
     lf = Part('Device', 'C', value='10uF', footprint='C_0805_HandSoldering')
     hf = Part('Device', 'C', value='100nF', footprint='C_0805_HandSoldering')
@@ -228,10 +235,8 @@ def configEeprom(fpga):
     add0805Pullup(fpga.VCC_SPI, fpga.IOB_108_SS, '10KOhm')
 
     # tie WP/HOLD high
-    WP_up = Part('Device', 'R', value='10KOhm', footprint='R_0805_HandSoldering')
-    eeprom['~WP'] += WP_up[1]
-    eeprom['~HOLD'] += WP_up[1]
-    eeprom.VCC += WP_up[2]
+    add0805Pullup(eeprom.VCC, eeprom['~WP'], '10KOhm')
+    add0805Pullup(eeprom.VCC, eeprom['~HOLD'], '10KOhm')
 
     eeprom.VCC += fpga.VCC_SPI
     connGND(eeprom.GND)
@@ -254,10 +259,12 @@ def programmingHeader(fpga):
 def led(pin):
     global local
     led = Part(local, 'LED', footprint='LED_0805_HandSoldering')
-    r = Part('Device', 'R', value='2.2KOhm', footprint='R_0805_HandSoldering')
     led[2] += pin
-    led[1] += r[1]
-    connGND(r[2])
+
+    if passives:
+        r = Part('Device', 'R', value='2.2KOhm', footprint='R_0805_HandSoldering')
+        led[1] += r[1]
+        connGND(r[2])
 
 @subcircuit
 def ledPeripheral(fpga):
@@ -273,7 +280,8 @@ def ledPeripheral(fpga):
 dataBus = Bus('data', 8)
 rwb = Bus('r/wb', 1)     # high = read, low = write
 phi2 = Bus('phi2', 1)
-addressBus = Bus('addr_b', 24)    # decoded by fpga
+addressBus = Bus('addr_b', 16)    # decoded by fpga
+ramAddrBus = Bus('addr_b2', 3)
 
 
 
@@ -288,6 +296,10 @@ IOL = sorted(fpga['IOL_'], reverse=True, key=lambda pin: int(pin.num))
 cpuAddrBus = Bus('addr_c', 16)    # decoded by fpga
 cpuAddrBus += IOL[0:16]
 dataBus[7:0] += IOL[17:25]
+
+IOR = sorted(fpga['IOR_'], reverse=True, key=lambda pin: int(pin.num))
+addressBus += IOR[0:16]
+ramAddrBus += IOR[16:19]
 
 
 xo = Part('Oscillator', 'VC-81', footprint='Oscillator_DIP-8')
@@ -353,7 +365,8 @@ def RAM():
     connGND(sram['GND'])
 
     sram['IO[0:7]'] += dataBus
-    sram['A[0:18]'] += addressBus[0:18]
+    sram['A[0:15]'] += addressBus
+    sram['A[16:18]'] += ramAddrBus
     sram.CE_B += fpga.IOB_56
     sram.WE_B += fpga.IOB_57
     sram.OE_B += fpga.IOB_61
