@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name w65c816)(type KiCad)(uri w65c816.pretty)(options "")(descr ""))
+)
