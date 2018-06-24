@@ -266,22 +266,22 @@ def led(pin):
         led[1] += r[1]
         connGND(r[2])
 
+# TODO move to IOT & make input pins configurable
 @subcircuit
 def ledPeripheral(fpga):
-    led(fpga.IOB_63)
-    led(fpga.IOB_64)
-    led(fpga.IOB_71)
-    led(fpga.IOB_72)
-    led(fpga.IOB_73)
-    led(fpga.IOB_79)
     led(fpga.IOB_80)
     led(fpga.IOB_81_GBIN5)
+    led(fpga.IOB_82_GBIN4)
+    led(fpga.IOB_91)
+    led(fpga.IOB_94)
+    led(fpga.IOB_95)
+    led(fpga.IOB_96)
+    led(fpga.IOB_102)
 
 dataBus = Bus('data', 8)
-rwb = Bus('r/wb', 1)     # high = read, low = write
-phi2 = Bus('phi2', 1)
-addressBus = Bus('addr_b', 16)    # decoded by fpga
-ramAddrBus = Bus('addr_b2', 3)
+rwb = Net('r/wb')     # high = read, low = write
+phi2 = Net('phi2')
+addressBus = Bus('addr_b', 19)    # decoded by fpga
 
 
 
@@ -298,8 +298,7 @@ cpuAddrBus += IOL[0:16]
 dataBus[7:0] += IOL[17:25]
 
 IOR = sorted(fpga['IOR_'], reverse=True, key=lambda pin: int(pin.num))
-addressBus += IOR[0:16]
-ramAddrBus += IOR[16:19]
+addressBus += IOR[0:19]
 
 
 xo = Part('Oscillator', 'VC-81', footprint='Oscillator_DIP-8')
@@ -365,8 +364,7 @@ def RAM():
     connGND(sram['GND'])
 
     sram['IO[0:7]'] += dataBus
-    sram['A[0:15]'] += addressBus
-    sram['A[16:18]'] += ramAddrBus
+    sram['A[0:18]'] += addressBus
     sram.CE_B += fpga.IOB_56
     sram.WE_B += fpga.IOB_57
     sram.OE_B += fpga.IOB_61
