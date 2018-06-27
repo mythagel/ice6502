@@ -73,8 +73,8 @@ lib_search_paths[KICAD] = [
 # Generating the netlist without power nets makes arranging the components
 # easier when laying out the pcb as related components are easily grouped.
 # Then turn them back on and route power and ground
-distributePower = False
-passives = False
+distributePower = True
+passives = True
 
 # global nets
 if distributePower:
@@ -269,6 +269,7 @@ def led(pin):
 # TODO move to IOT & make input pins configurable
 @subcircuit
 def ledPeripheral(fpga):
+    # resistor array
     led(fpga.IOB_80)
     led(fpga.IOB_81_GBIN5)
     led(fpga.IOB_82_GBIN4)
@@ -278,9 +279,9 @@ def ledPeripheral(fpga):
     led(fpga.IOB_96)
     led(fpga.IOB_102)
 
-dataBus = Bus('data', 8)
 rwb = Net('r/wb')     # high = read, low = write
 phi2 = Net('phi2')
+dataBus = Bus('data', 8)
 addressBus = Bus('addr_b', 19)    # decoded by fpga
 
 
@@ -292,21 +293,25 @@ conn3v3(fpga.VCC_SPI)
 configEeprom(fpga)
 programmingHeader(fpga)
 
-IOL = sorted(fpga['IOL_'], reverse=True, key=lambda pin: int(pin.num))
-cpuAddrBus = Bus('addr_c', 16)    # decoded by fpga
-cpuAddrBus += IOL[0:16]
-dataBus[7:0] += IOL[17:25]
-
+IOL = sorted(fpga['IOL_'], reverse=False, key=lambda pin: int(pin.num))
 IOR = sorted(fpga['IOR_'], reverse=True, key=lambda pin: int(pin.num))
+IOT = sorted(fpga['IOT_'], reverse=False, key=lambda pin: int(pin.num))
+
+cpuDataBus = Bus('data_c', 8)    # decoded by fpga
+cpuAddrBus = Bus('addr_c', 16)    # decoded by fpga
+
+cpuAddrBus[12:15] += [IOT.pop() for _ in range(0,4)]
+cpuDataBus[7:0] += [IOT.pop() for _ in range(0,8)]
+cpuAddrBus[11:0] += [IOL.pop(0) for _ in range(0,12)]
+
 addressBus += IOR[0:19]
 
-
-xo = Part('Oscillator', 'VC-81', footprint='Oscillator_DIP-8')
-conn3v3(xo.Vcontrol)
-conn3v3(xo.Vcc)
+xo = Part('Oscillator', 'ASE-xxxMHz', footprint='Oscillator_SMD_Abracon_ASE-4pin_3.2x2.5mm_HandSoldering')
+conn3v3(xo.EN)
+conn3v3(xo.Vdd)
 connGND(xo.GND)
 xo.OUT += fpga.IOB_96
-add0805Filter(xo.Vcc, xo.GND, '10nF')
+add0805Filter(xo.Vdd, xo.GND, '10nF')
 
 #fpga['IOT_206', 'IOT_212', 'IOT_213', 'IOT_214', 'IOT_215', 'IOT_216', 'IOT_217', 'IOT_219'] += dataBus
 # NOTE: downstream address lines (24bit); bank address from dataBus while PHI2 is low
@@ -326,8 +331,7 @@ connGND(cpu['VSS'])
 cpu.E += NC
 cpu.MX += NC
 
-cpu['D[0:7]'] += dataBus
-# NOTE: upstream address lines (16bit)
+cpu['D[0:7]'] += cpuDataBus
 cpu['A[0:15]'] += cpuAddrBus
 #cpu.RWB += fpga
 #cpu.PHI2 += fpga
