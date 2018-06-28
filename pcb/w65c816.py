@@ -345,7 +345,7 @@ testPoint(cpu.RESB, 'RESB')
 # Vector pull - know if a vector address is being read
 #cpu.VPB += fpga
 
-# VPA/VDA - either high = bus address is value
+# VPA/VDA - either high = bus address is valid
 #cpu.VPA += fpga
 #cpu.VDA += fpga
 
