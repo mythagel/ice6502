@@ -268,16 +268,9 @@ def led(pin):
 
 # TODO move to IOT & make input pins configurable
 @subcircuit
-def ledPeripheral(fpga):
-    # resistor array
-    led(fpga.IOB_80)
-    led(fpga.IOB_81_GBIN5)
-    led(fpga.IOB_82_GBIN4)
-    led(fpga.IOB_91)
-    led(fpga.IOB_94)
-    led(fpga.IOB_95)
-    led(fpga.IOB_96)
-    led(fpga.IOB_102)
+def ledPeripheral(pins):
+    for pin in pins:
+        led(pin)
 
 rwb = Net('r/wb')     # high = read, low = write
 phi2 = Net('phi2')
@@ -294,7 +287,7 @@ configEeprom(fpga)
 programmingHeader(fpga)
 
 IOL = sorted(fpga['IOL_'], reverse=False, key=lambda pin: int(pin.num))
-IOR = sorted(fpga['IOR_'], reverse=True, key=lambda pin: int(pin.num))
+IOR = sorted(fpga['IOR_'], reverse=False, key=lambda pin: int(pin.num))
 IOT = sorted(fpga['IOT_'], reverse=False, key=lambda pin: int(pin.num))
 
 cpuDataBus = Bus('data_c', 8)    # decoded by fpga
@@ -304,7 +297,9 @@ cpuAddrBus[12:15] += [IOT.pop() for _ in range(0,4)]
 cpuDataBus[7:0] += [IOT.pop() for _ in range(0,8)]
 cpuAddrBus[11:0] += [IOL.pop(0) for _ in range(0,12)]
 
-addressBus += IOR[0:19]
+# Decoded address and data bus
+addressBus += [IOR.pop(0) for _ in range(0,19)]
+dataBus += [IOR.pop(0) for _ in range(0,8)]
 
 xo = Part('Oscillator', 'ASE-xxxMHz', footprint='Oscillator_SMD_Abracon_ASE-4pin_3.2x2.5mm_HandSoldering')
 conn3v3(xo.EN)
@@ -321,7 +316,7 @@ add0805Filter(xo.Vdd, xo.GND, '10nF')
 #TODO function to connect bus device
 # common bus pins: addr[0:23], data[0:8], RWB, PHI2
 
-ledPeripheral(fpga)
+ledPeripheral([IOL.pop(0) for _ in range(0,8)])
 
 cpu = Part(local, 'W65C816S_PLCC', footprint='PLCC44')
 cpu.ref = "U1"
