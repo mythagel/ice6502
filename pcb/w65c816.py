@@ -227,11 +227,17 @@ def makeFPGA():
 @subcircuit
 def configEeprom(fpga):
     eeprom = Part('Memory_EEPROM', '25LCxxx', value='AT25SF041-SSHD-B', footprint='SOIC-8_3.9x4.9mm_Pitch1.27mm')
-    fpga.IOB_107_SCK += eeprom.SCK
-    fpga.IOB_105_SDO += eeprom.MOSI
-    fpga.IOB_106_SDI += eeprom.MISO
 
-    fpga.IOB_108_SS += eeprom['~CS']
+    SCK = Net('SCK')
+    MOSI = Net('MOSI')
+    MISO = Net('MISO')
+    CS = Net('CS')
+
+    fpga.IOB_107_SCK += eeprom.SCK, SCK
+    fpga.IOB_105_SDO += eeprom.MOSI, MOSI
+    fpga.IOB_106_SDI += eeprom.MISO, MISO
+
+    fpga.IOB_108_SS += eeprom['~CS'], CS
     add0805Pullup(fpga.VCC_SPI, fpga.IOB_108_SS, '10KOhm')
 
     # tie WP/HOLD high
