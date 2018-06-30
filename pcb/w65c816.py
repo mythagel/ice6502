@@ -205,6 +205,10 @@ def makeFPGA():
     fpga.ref = "U0"
 
     # TODO supplies and filters
+    CRESET_B = Net('CRESET_B')
+    CDONE = Net('CDONE')
+    fpga.CRESET_B += CRESET_B
+    fpga.CDONE += CDONE
     add0805Pullup(fpga['VCCIO_2'], fpga.CRESET_B, '10KOhm')
     add0805Pullup(fpga['VCCIO_2'], fpga.CDONE, '2.2KOhm')
 
@@ -241,7 +245,12 @@ def configEeprom(fpga):
     add0805Pullup(fpga.VCC_SPI, fpga.IOB_108_SS, '10KOhm')
 
     # tie WP/HOLD high
+    WPB = Net('~WP')
+    eeprom['~WP'] += WPB
     add0805Pullup(eeprom.VCC, eeprom['~WP'], '10KOhm')
+
+    HOLDB = Net('~HOLD')
+    eeprom['~HOLD'] += HOLDB
     add0805Pullup(eeprom.VCC, eeprom['~HOLD'], '10KOhm')
 
     eeprom.VCC += fpga.VCC_SPI
@@ -337,9 +346,13 @@ cpu['A[0:15]'] += cpuAddrBus
 #cpu.RWB += fpga
 #cpu.PHI2 += fpga
 
+RDY = Net('RDY')
+cpu.RDY += RDY
 add0805Pullup(supply_3v3, cpu.RDY, '3.3KOhm')
 testPoint(cpu.RDY, 'RDY')
 
+RESB = Net('RESB')
+cpu.RESB += RESB
 add0805Pullup(supply_3v3, cpu.RESB, '2.2KOhm')
 testPoint(cpu.RESB, 'RESB')
 
