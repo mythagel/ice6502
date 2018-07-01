@@ -205,3 +205,33 @@ W65C51N += Pin(num='27', name='PHI2', func=Pin.INPUT)
 W65C51N += Pin(num='28', name='RWB', func=Pin.INPUT)
 local += W65C51N
 
+# LED Driver
+stp16 = Part(name='STP16CP05', tool=SKIDL, dest=TEMPLATE)
+stp16.ref_prefix = 'U'
+stp16.description = '16-bit constant current LED sink driver'
+stp16 += Pin(num=1, name='GND', func=Pin.PWRIN)
+stp16 += Pin(num=2, name='SDI', func=Pin.INPUT)
+stp16 += Pin(num=3, name='CLK', func=Pin.INPUT)
+stp16 += Pin(num=4, name='LE/DM1', func=Pin.INPUT)
+stp16 += Pin(num=5, name='OUT0', func=Pin.PWROUT)
+stp16 += Pin(num=6, name='OUT1', func=Pin.PWROUT)
+stp16 += Pin(num=7, name='OUT2', func=Pin.PWROUT)
+stp16 += Pin(num=8, name='OUT3', func=Pin.PWROUT)
+stp16 += Pin(num=9, name='OUT4', func=Pin.PWROUT)
+stp16 += Pin(num=10, name='OUT5', func=Pin.PWROUT)
+stp16 += Pin(num=11, name='OUT6', func=Pin.PWROUT)
+stp16 += Pin(num=12, name='OUT7', func=Pin.PWROUT)
+stp16 += Pin(num=13, name='OUT8', func=Pin.PWROUT)
+stp16 += Pin(num=14, name='OUT9', func=Pin.PWROUT)
+stp16 += Pin(num=15, name='OUT10', func=Pin.PWROUT)
+stp16 += Pin(num=16, name='OUT11', func=Pin.PWROUT)
+stp16 += Pin(num=17, name='OUT12', func=Pin.PWROUT)
+stp16 += Pin(num=18, name='OUT13', func=Pin.PWROUT)
+stp16 += Pin(num=19, name='OUT14', func=Pin.PWROUT)
+stp16 += Pin(num=20, name='OUT15', func=Pin.PWROUT)
+stp16 += Pin(num=21, name='~OE/DM2', func=Pin.INPUT)
+stp16 += Pin(num=22, name='SDO', func=Pin.OUTPUT)
+stp16 += Pin(num=23, name='R-EXT', func=Pin.INPUT)
+stp16 += Pin(num=24, name='Vdd', func=Pin.PWRIN)
+local += stp16
+

@@ -70,35 +70,21 @@ lib_search_paths[KICAD] = [
     os.path.abspath('lib/kicad-symbols'),
 ]
 
-# Generating the netlist without power nets makes arranging the components
-# easier when laying out the pcb as related components are easily grouped.
-# Then turn them back on and route power and ground
-distributePower = True
-passives = True
-
 # global nets
-if distributePower:
-    gnd = Net('GND')
-    gnd.drive = POWER
-    supply_3v3 = Net('3v3')
-    supply_1v2 = Net('1v2')
-else:
-    gnd = None
-    supply_3v3 = None
-    supply_1v2 = None
+gnd = Net('GND')
+gnd.drive = POWER
+supply_3v3 = Net('3v3')
+supply_1v2 = Net('1v2')
 
 def connGND(pin):
     global gnd
-    if distributePower:
-        pin += gnd
+    pin += gnd
 def conn3v3(pin):
     global supply_3v3
-    if distributePower:
-        pin += supply_3v3
+    pin += supply_3v3
 def conn1v2(pin):
     global supply_1v2
-    if distributePower:
-        pin += supply_1v2
+    pin += supply_1v2
 
 @subcircuit
 def testPoint(net, name):
@@ -151,16 +137,13 @@ def powerSupply():
     reg3v3(vin, supply_3v3)
     reg1v2(supply_3v3, supply_1v2)
 
-    if distributePower:
-        testPoint(supply_3v3, '3v3')
-        testPoint(supply_1v2, '1v2')
-        testPoint(gnd, 'GND')
+    testPoint(supply_3v3, '3v3')
+    testPoint(supply_1v2, '1v2')
+    testPoint(gnd, 'GND')
 
 # TODO similar func for decouping caps
 @subcircuit
 def add0805Pullup(vcc, pin, value):
-    if passives == False:
-        return
     pullup = Part('Device', 'R', value=value, footprint='R_0805_HandSoldering')
     if vcc:
         vcc += pullup[1]
@@ -168,8 +151,6 @@ def add0805Pullup(vcc, pin, value):
 
 @subcircuit
 def add0805Filter(vcc, gnd, value):
-    if passives == False:
-        return
     f = Part('Device', 'C', value=value, footprint='C_0805_HandSoldering')
     if vcc:
         vcc += f[1]
@@ -177,8 +158,6 @@ def add0805Filter(vcc, gnd, value):
 
 @subcircuit
 def pllFilter(vccpll, gndpll):
-    if passives == False:
-        return
     r = Part('Device', 'R', value='100Ohm', footprint='R_0805_HandSoldering')
     lf = Part('Device', 'C', value='10uF', footprint='C_0805_HandSoldering')
     hf = Part('Device', 'C', value='100nF', footprint='C_0805_HandSoldering')
@@ -205,7 +184,7 @@ def makeFPGA():
     fpga.ref = "U0"
 
     # TODO supplies and filters
-    CRESET_B = Net('CRESET_B')
+    CRESET_B = Net('~CRESET')
     CDONE = Net('CDONE')
     fpga.CRESET_B += CRESET_B
     fpga.CDONE += CDONE
@@ -276,10 +255,9 @@ def led(pin):
     led = Part(local, 'LED', footprint='LED_0805_HandSoldering')
     led[2] += pin
 
-    if passives:
-        r = Part('Device', 'R', value='2.2KOhm', footprint='R_0805_HandSoldering')
-        led[1] += r[1]
-        connGND(r[2])
+    r = Part('Device', 'R', value='2.2KOhm', footprint='R_0805_HandSoldering')
+    led[1] += r[1]
+    connGND(r[2])
 
 # TODO move to IOT & make input pins configurable
 @subcircuit
@@ -287,7 +265,7 @@ def ledPeripheral(pins):
     for pin in pins:
         led(pin)
 
-rwb = Net('r/wb')     # high = read, low = write
+rwb = Net('r/~w')     # high = read, low = write
 phi2 = Net('phi2')
 dataBus = Bus('data', 8)
 addressBus = Bus('addr_b', 19)    # decoded by fpga
@@ -340,31 +318,48 @@ connGND(cpu['VSS'])
 
 cpu.E += NC
 cpu.MX += NC
+cpu.MLB += NC
 
 cpu['D[0:7]'] += cpuDataBus
 cpu['A[0:15]'] += cpuAddrBus
-#cpu.RWB += fpga
-#cpu.PHI2 += fpga
 
 RDY = Net('RDY')
 cpu.RDY += RDY
 add0805Pullup(supply_3v3, cpu.RDY, '3.3KOhm')
 testPoint(cpu.RDY, 'RDY')
 
-RESB = Net('RESB')
+RESB = Net('~RES')
 cpu.RESB += RESB
 add0805Pullup(supply_3v3, cpu.RESB, '2.2KOhm')
-testPoint(cpu.RESB, 'RESB')
+testPoint(cpu.RESB, '~RES')
+
+
+#cpu.RWB += fpga
+#cpu.PHI2 += fpga
+
+VDA = Net('VDA')
+cpu.VDA += VDA
+cpu.VDA += IOT.pop()
 
 # Vector pull - know if a vector address is being read
-#cpu.VPB += fpga
+VPB = Net('~VP')
+cpu.VPB += VPB
+cpu.VPB += IOL.pop(0)
 
 # VPA/VDA - either high = bus address is valid
-#cpu.VPA += fpga
-#cpu.VDA += fpga
+VPA = Net('VPA')
+cpu.VPA += VPA
+cpu.VPA += IOL.pop(0)
 
-#cpu.ABORTB += fpga
+ABORTB = Net('~ABORT')
+cpu.ABORTB += ABORTB
+cpu.ABORTB += IOL.pop(0)
+
+
+# TODO connect BE to fpga or tie high?
 #cpu.BE += fpga
+#add0805Pullup(supply_3v3, cpu.BE, '3.3KOhm')
+
 
 # IRQ design - all individually routed to fpga?
 #cpu.IRQB += fpga
@@ -406,7 +401,7 @@ def ACIA():
     global dataBus
     global addressBus
     acia = Part(local, 'W65C51N_PLCC', footprint='PLCC28')
-    via.ref = "U3"
+    acia.ref = "U3"
     conn3v3(acia['VDD'])
     connGND(acia['VSS'])
     acia['D[0:7]'] += dataBus
@@ -417,6 +412,8 @@ powerSupply()
 RAM()
 #VIA()
 #ACIA()
+
+ledDriver = Part(local, 'STP16CP05', footprint='TSSOP-24_4.4x7.8mm_Pitch0.65mm')
 
 if sys.argv[1] == 'generate':
     ERC()
