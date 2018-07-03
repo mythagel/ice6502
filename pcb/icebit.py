@@ -4,62 +4,6 @@ import os
 import glob
 from parts import *
 
-# A            Assembly
-# AR         Amplifier
-# AT         Attenuator; Isolator
-# B            Blower
-# BR         Bridge Rectifier
-# BT         Battery
-# C            Capacitor
-# CB         Circuit Breaker
-# CN         Capacitor Network
-# CP         Coupler
-# CR         Diode or Silicon Rectifier
-# D            Diode; Thyristor; Varacter
-# DC         Directional Coupler
-# DP         Duplexer
-# DL         Delay Line
-# DS         Digital Display; LED Lamp
-# E            Miscellaneous Electrical Part
-# F            Fuse
-# FB          Ferrite
-# FD         Fiducial
-# FL          Filter
-# G           Generator
-# HW        Hardware
-# HY         Circulator
-# I or ICT In Circuit Test Point
-# J            Jack Connector
-# JP          Configuration Jumper
-# K           Relay
-# L            Coil; Inductor
-# LS          Loud Speaker/Buzzer
-# M           Motor
-# MG        Motor-Generator
-# MH        Mounting Hole
-# MK        Microphone
-# MP         Mechanical Part
-# P            Plug Type Connector
-# PS          Power Supply
-# Q           Transistor
-# R            Resistor
-# RN         Resistor Network
-# RT         Thermistor
-# S            Switch
-# T            Transformer
-# TB         Terminal Block
-# TC         Thermocouple
-# TP          Test Point
-# U            Tuner
-# U            Integrated Circuit
-# V            Electron Tube
-# VR         Voltage Regulator
-# W           Cable Transmission
-# X            Sub-circuit
-# Y            Crystal or Oscillator
-# Z            Ref Des Suppressed
-
-
 # could probably solder 0603
 
 # Setup
@@ -366,21 +310,9 @@ cpu.ABORTB += IOL.pop(0)
 
 #cpu.NMIB += fpga
 
-
 @subcircuit
 def RAM():
-    global local
-    global dataBus
-    global addressBus
-    sram = Part(local, 'IS61WV', value='IS61WV5128EDBLL-10TLI', footprint='TSOP-II-44_10.16x18.42_Pitch0.8mm')
-    conn3v3(sram['Vdd'])
-    connGND(sram['GND'])
-
-    sram['IO[0:7]'] += dataBus
-    sram['A[0:18]'] += addressBus
-    sram.CE_B += fpga.IOB_56
-    sram.WE_B += fpga.IOB_57
-    sram.OE_B += fpga.IOB_61
+    pass
 
 @subcircuit
 def VIA():
