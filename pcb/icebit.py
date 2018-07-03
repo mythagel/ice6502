@@ -87,8 +87,8 @@ def powerSupply():
 
 # TODO similar func for decouping caps
 @subcircuit
-def add0805Pullup(vcc, pin, value):
-    pullup = Part('Device', 'R', value=value, footprint='R_0805_HandSoldering')
+def add0805Pullup(vcc, pin, value, ref):
+    pullup = Part('Device', 'R', value=value, footprint='R_0805_HandSoldering', ref=ref)
     if vcc:
         vcc += pullup[1]
     pin += pullup[2]
@@ -124,16 +124,15 @@ def pllFilter(vccpll, gndpll):
 
 @subcircuit
 def makeFPGA():
-    fpga = Part('Lattice_iCE_FPGA', 'iCE40-HX4K-TQ144', footprint='TQFP-144_20x20mm_Pitch0.5mm')
-    fpga.ref = "U0"
+    fpga = Part('Lattice_iCE_FPGA', 'iCE40-HX4K-TQ144', footprint='TQFP-144_20x20mm_Pitch0.5mm', ref='U0')
 
     # TODO supplies and filters
     CRESET_B = Net('~CRESET')
     CDONE = Net('CDONE')
     fpga.CRESET_B += CRESET_B
     fpga.CDONE += CDONE
-    add0805Pullup(fpga['VCCIO_2'], fpga.CRESET_B, '10KOhm')
-    add0805Pullup(fpga['VCCIO_2'], fpga.CDONE, '2.2KOhm')
+    add0805Pullup(fpga['VCCIO_2'], fpga.CRESET_B, '10KOhm', 1)
+    add0805Pullup(fpga['VCCIO_2'], fpga.CDONE, '2.2KOhm', 2)
 
     connGND(fpga['GND[9]'])
     conn3v3(fpga['VCCIO'])
@@ -153,7 +152,8 @@ def makeFPGA():
 
 @subcircuit
 def configEeprom(fpga):
-    eeprom = Part('Memory_EEPROM', '25LCxxx', value='AT25SF041-SSHD-B', footprint='SOIC-8_3.9x4.9mm_Pitch1.27mm')
+    eeprom = Part('Memory_EEPROM', '25LCxxx', value='AT25SF041-SSHD-B', footprint='SOIC-8_3.9x4.9mm_Pitch1.27mm',
+            ref='U1')
 
     SCK = Net('SCK')
     MOSI = Net('MOSI')

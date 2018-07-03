@@ -322,6 +322,26 @@ def flatten(nested_list):
             lst.append(item)
     return lst
 
+def ensure_unique_name(lst, attrib, prefix, initial=None):
+
+    # If the initial name is None, then create a name based on the prefix
+    # and the smallest unused number that's available for that prefix.
+    if not initial:
+        raise Exception('Ref must be assigned')
+
+    # If the initial name is just a number, then prepend the prefix to it.
+    elif isinstance(initial, int):
+        initial = prefix + str(initial)
+
+    # Now determine if there are any items in the list with the same name.
+    filter_dict = {attrib: re.escape(initial)}
+    sub_list = filter_list(lst, **filter_dict)
+
+    # If the name is unique, then return it.
+    if not sub_list:
+        return initial
+
+    raise Exception('Ref is not unique')
 
 def get_unique_name(lst, attrib, prefix, initial=None):
     """

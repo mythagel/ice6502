@@ -170,6 +170,9 @@ class Part(object):
             )
             raise Exception
 
+        if 'ref' in attribs:
+            self._ref = attribs['ref']
+
         # If the part is going to be an element in a circuit, then add it to the
         # the circuit and make any indicated pin/net connections.
         if dest != LIBRARY:
@@ -752,7 +755,7 @@ class Part(object):
 
         # Now name the object with the given reference or some variation
         # of it that doesn't collide with anything else in the list.
-        self._ref = get_unique_name(self.circuit.parts, 'ref', self.ref_prefix,
+        self._ref = ensure_unique_name(self.circuit.parts, 'ref', self.ref_prefix,
                                     r)
         return
 
