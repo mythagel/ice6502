@@ -341,7 +341,7 @@ def ensure_unique_name(lst, attrib, prefix, initial=None):
     if not sub_list:
         return initial
 
-    raise Exception('Ref is not unique')
+    raise Exception('Ref \'%s\' is not unique; Suggest: %s' % (initial, get_unique_name(lst, attrib, prefix)))
 
 def get_unique_name(lst, attrib, prefix, initial=None):
     """

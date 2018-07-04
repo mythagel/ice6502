@@ -30,18 +30,15 @@ def conn1v2(pin):
     global supply_1v2
     pin += supply_1v2
 
-@subcircuit
-def testPoint(net, name):
-    tp = Part('Connector_Generic', 'Conn_01x01', ref_prefix='TP', value=name, footprint='Test_Point_Pad_d1.5mm')
+def testPoint(net, name, ref):
+    tp = Part('Connector_Generic', 'Conn_01x01', ref_prefix='TP', value=name, footprint='Test_Point_Pad_d1.5mm', ref=ref)
     tp[1] += net
 
 # 3v3 supply switching regulator + filters
-@subcircuit
-def reg3v3(vin, vout):
-    vreg = Part('Regulator_Linear', 'L7805', value='VXO7803-1000', footprint='TO-220_Vertical')
-    vreg.ref_prefix = 'VR'
-    inC = Part('Device', 'C', value='10uF/50V', footprint='C_1210_HandSoldering')
-    outC = Part('Device', 'C', value='22uF/10V', footprint='C_0805_HandSoldering')
+def reg3v3(vin, vout, ref):
+    vreg = Part('Regulator_Linear', 'L7805', value='VXO7803-1000', footprint='TO-220_Vertical', ref=ref[0])
+    inC = Part('Device', 'C', value='10uF/50V', footprint='C_1210_HandSoldering', ref=ref[1])
+    outC = Part('Device', 'C', value='22uF/10V', footprint='C_0805_HandSoldering', ref=ref[2])
     vreg.IN += vin
     vreg.IN += inC[1]
     vreg.GND += inC[2]
@@ -52,12 +49,11 @@ def reg3v3(vin, vout):
         vreg.OUT += vout
 
 # 1v2 supply switching regulator + filters
-@subcircuit
-def reg1v2(vin, vout):
+def reg1v2(vin, vout, ref):
     global local
-    vreg = Part(local, 'LDL112_SO8', value='LDL112D12R', footprint='SOIC-8_3.9x4.9mm_Pitch1.27mm')
-    inC = Part('Device', 'C', value='1uF', footprint='C_0805_HandSoldering')
-    outC = Part('Device', 'C', value='1uF', footprint='C_0805_HandSoldering')
+    vreg = Part(local, 'LDL112_SO8', value='LDL112D12R', footprint='SOIC-8_3.9x4.9mm_Pitch1.27mm', ref=ref[0])
+    inC = Part('Device', 'C', value='1uF', footprint='C_0805_HandSoldering', ref=ref[1])
+    outC = Part('Device', 'C', value='1uF', footprint='C_0805_HandSoldering', ref=ref[2])
     vreg.VIN += inC[1]
     if vin:
         vreg.VIN += vin
@@ -73,38 +69,35 @@ def reg1v2(vin, vout):
 def powerSupply():
     vin = Net('VIN')
     vin.drive = POWER
-    VIN_Conn = Part('Connector_Generic', 'Conn_01x01', value='VIN', footprint='Pin_d1.0mm_L10.0mm')
+    VIN_Conn = Part('Connector_Generic', 'Conn_01x01', value='VIN', footprint='Pin_d1.0mm_L10.0mm', ref=4)
     VIN_Conn[1] += vin
-    GND_Conn = Part('Connector_Generic', 'Conn_01x01', value='GND', footprint='Pin_d1.0mm_L10.0mm')
+    GND_Conn = Part('Connector_Generic', 'Conn_01x01', value='GND', footprint='Pin_d1.0mm_L10.0mm', ref=5)
     connGND(GND_Conn[1])
 
-    reg3v3(vin, supply_3v3)
-    reg1v2(supply_3v3, supply_1v2)
+    reg3v3(vin, supply_3v3, [2, 8, 9])
+    reg1v2(supply_3v3, supply_1v2, [1, 10, 11])
 
-    testPoint(supply_3v3, '3v3')
-    testPoint(supply_1v2, '1v2')
-    testPoint(gnd, 'GND')
+    testPoint(supply_3v3, '3v3', 6)
+    testPoint(supply_1v2, '1v2', 7)
+    testPoint(gnd, 'GND', 8)
 
 # TODO similar func for decouping caps
-@subcircuit
 def add0805Pullup(vcc, pin, value, ref):
     pullup = Part('Device', 'R', value=value, footprint='R_0805_HandSoldering', ref=ref)
     if vcc:
         vcc += pullup[1]
     pin += pullup[2]
 
-@subcircuit
-def add0805Filter(vcc, gnd, value):
-    f = Part('Device', 'C', value=value, footprint='C_0805_HandSoldering')
+def add0805Filter(vcc, gnd, value, ref):
+    f = Part('Device', 'C', value=value, footprint='C_0805_HandSoldering', ref=ref)
     if vcc:
         vcc += f[1]
     gnd += f[2]
 
-@subcircuit
-def pllFilter(vccpll, gndpll):
-    r = Part('Device', 'R', value='100Ohm', footprint='R_0805_HandSoldering')
-    lf = Part('Device', 'C', value='10uF', footprint='C_0805_HandSoldering')
-    hf = Part('Device', 'C', value='100nF', footprint='C_0805_HandSoldering')
+def pllFilter(vccpll, gndpll, ref):
+    r = Part('Device', 'R', value='100Ohm', footprint='R_0805_HandSoldering', ref=ref[0])
+    lf = Part('Device', 'C', value='10uF', footprint='C_0805_HandSoldering', ref=ref[1])
+    hf = Part('Device', 'C', value='100nF', footprint='C_0805_HandSoldering', ref=ref[2])
 
     a = Net('PLLVCC')
     a += vccpll
@@ -138,8 +131,8 @@ def makeFPGA():
     conn3v3(fpga['VCCIO'])
     conn1v2(fpga['VCC[4]'])
 
-    pllFilter(fpga.VCCPLL0, fpga.GNDPLL0)
-    pllFilter(fpga.VCCPLL1, fpga.GNDPLL1)
+    pllFilter(fpga.VCCPLL0, fpga.GNDPLL0, [3, 1, 2])
+    pllFilter(fpga.VCCPLL1, fpga.GNDPLL1, [4, 3, 4])
 
     # Other boards connect to 3v3 via schottky with 80mv drop (ref. icestick), but
     # not using NVCM in this design, DS says max of 3.46 for master SPI conf
@@ -165,25 +158,26 @@ def configEeprom(fpga):
     fpga.IOB_106_SDI += eeprom.MISO, MISO
 
     fpga.IOB_108_SS += eeprom['~CS'], CS
-    add0805Pullup(fpga.VCC_SPI, fpga.IOB_108_SS, '10KOhm')
+    add0805Pullup(fpga.VCC_SPI, fpga.IOB_108_SS, '10KOhm', 5)
 
     # tie WP/HOLD high
     WPB = Net('~WP')
     eeprom['~WP'] += WPB
-    add0805Pullup(eeprom.VCC, eeprom['~WP'], '10KOhm')
+    add0805Pullup(eeprom.VCC, eeprom['~WP'], '10KOhm', 6)
 
     HOLDB = Net('~HOLD')
     eeprom['~HOLD'] += HOLDB
-    add0805Pullup(eeprom.VCC, eeprom['~HOLD'], '10KOhm')
+    add0805Pullup(eeprom.VCC, eeprom['~HOLD'], '10KOhm', 7)
 
     eeprom.VCC += fpga.VCC_SPI
     connGND(eeprom.GND)
 
-    add0805Filter(eeprom.VCC, eeprom.GND, '100nF')
+    add0805Filter(eeprom.VCC, eeprom.GND, '100nF', 5)
 
 @subcircuit
 def programmingHeader(fpga):
-    hdr = Part('Connector_Generic', 'Conn_02x04_Odd_Even', value='Programming Header', footprint='Pin_Header_Straight_2x04_Pitch2.54mm')
+    hdr = Part('Connector_Generic', 'Conn_02x04_Odd_Even', value='Programming Header',
+            footprint='Pin_Header_Straight_2x04_Pitch2.54mm', ref=3)
     hdr[1] += fpga.VCC_SPI
     connGND(hdr[2])
     hdr[3] += fpga.CDONE
@@ -203,11 +197,25 @@ def led(pin):
     led[1] += r[1]
     connGND(r[2])
 
-# TODO move to IOT & make input pins configurable
 @subcircuit
-def ledPeripheral(pins):
-    for pin in pins:
-        led(pin)
+def ledPeripheral(clk, sdi, le, oe, ref):
+    drv = Part(local, 'STP16CP05', footprint='TSSOP-24_4.4x7.8mm_Pitch0.65mm', ref=ref[0])
+    # 2KOhm = ~15ma
+    r = Part('Device', 'R', value='2KOhm', footprint='R_0805_HandSoldering', ref=ref[1])
+
+    drv.CLK += Net('CLK'), clk
+    drv.SDI += Net('SDI'), sdi
+    drv.LE += Net('LE'), le
+    drv['~OE'] += Net('~OE'), oe
+    connGND(drv.GND)
+    conn3v3(drv.Vdd)
+    drv.SDO += NC
+    drv['R-EXT'] += r[1]
+    connGND(r[2])
+    for i in range(0, 15):
+        led = Part(local, 'LED', footprint='LED_0805_HandSoldering', ref=ref[2+i])
+        led[1] += drv['OUT%d' % i]
+        conn3v3(led[2])
 
 rwb = Net('r/~w')     # high = read, low = write
 phi2 = Net('phi2')
@@ -238,12 +246,12 @@ cpuAddrBus[11:0] += [IOL.pop(0) for _ in range(0,12)]
 addressBus += [IOR.pop(0) for _ in range(0,19)]
 dataBus += [IOR.pop(0) for _ in range(0,8)]
 
-xo = Part('Oscillator', 'ASE-xxxMHz', footprint='Oscillator_SMD_Abracon_ASE-4pin_3.2x2.5mm_HandSoldering')
+xo = Part('Oscillator', 'ASE-xxxMHz', footprint='Oscillator_SMD_Abracon_ASE-4pin_3.2x2.5mm_HandSoldering', ref=3)
 conn3v3(xo.EN)
 conn3v3(xo.Vdd)
 connGND(xo.GND)
 xo.OUT += fpga.IOB_96
-add0805Filter(xo.Vdd, xo.GND, '10nF')
+add0805Filter(xo.Vdd, xo.GND, '10nF', 6)
 
 #fpga['IOT_206', 'IOT_212', 'IOT_213', 'IOT_214', 'IOT_215', 'IOT_216', 'IOT_217', 'IOT_219'] += dataBus
 # NOTE: downstream address lines (24bit); bank address from dataBus while PHI2 is low
@@ -253,10 +261,10 @@ add0805Filter(xo.Vdd, xo.GND, '10nF')
 #TODO function to connect bus device
 # common bus pins: addr[0:23], data[0:8], RWB, PHI2
 
-ledPeripheral([IOL.pop(0) for _ in range(0,8)])
+ledPeripheral(IOL.pop(0), IOL.pop(0), IOL.pop(0), IOL.pop(0), [4, 8, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+    16])
 
-cpu = Part(local, 'W65C816S_PLCC', footprint='PLCC44')
-cpu.ref = "U1"
+cpu = Part(local, 'W65C816S_PLCC', footprint='PLCC44', ref=5)
 conn3v3(cpu['VDD'])
 connGND(cpu['VSS'])
 
@@ -269,13 +277,13 @@ cpu['A[0:15]'] += cpuAddrBus
 
 RDY = Net('RDY')
 cpu.RDY += RDY
-add0805Pullup(supply_3v3, cpu.RDY, '3.3KOhm')
-testPoint(cpu.RDY, 'RDY')
+add0805Pullup(supply_3v3, cpu.RDY, '3.3KOhm', 9)
+testPoint(cpu.RDY, 'RDY', 1)
 
 RESB = Net('~RES')
 cpu.RESB += RESB
-add0805Pullup(supply_3v3, cpu.RESB, '2.2KOhm')
-testPoint(cpu.RESB, '~RES')
+add0805Pullup(supply_3v3, cpu.RESB, '2.2KOhm', 10)
+testPoint(cpu.RESB, '~RES', 2)
 
 
 #cpu.RWB += fpga
@@ -345,7 +353,6 @@ RAM()
 #VIA()
 #ACIA()
 
-ledDriver = Part(local, 'STP16CP05', footprint='TSSOP-24_4.4x7.8mm_Pitch0.65mm')
 
 if sys.argv[1] == 'generate':
     ERC()
